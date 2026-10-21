@@ -4,5 +4,5 @@ git clone git@github.com:MapperMx/backup-script.git
 ```
 
 ```bash
-sudo bash backup-laravel.sh /var/www/parrillas /var/backups/parrillas
+sudo bash backup-laravel.sh /var/www/mods /var/backups/mods
 ```

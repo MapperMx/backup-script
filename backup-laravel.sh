@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Uso: bash backup-laravel.sh [/var/www] [/var/backups/laravel]
+# Uso: bash backup-laravel.sh [proyecto o carpeta de proyectos] [destino]
 # Requiere Bash 4+, zip y mysqldump.
 set -Eeuo pipefail
 umask 077
@@ -97,7 +97,22 @@ backup_project() (
 count=0
 failed=0
 shopt -s nullglob dotglob
-for project in "$ROOT"/*; do
+# Si ROOT es un proyecto, respaldarlo directamente. En caso contrario,
+# buscar proyectos en sus subdirectorios inmediatos.
+projects=()
+if [[ -f "$ROOT/artisan" && -f "$ROOT/.env" ]]; then
+    projects+=("$ROOT")
+else
+    for project in "$ROOT"/*; do
+        [[ -d "$project" && -f "$project/artisan" && -f "$project/.env" ]] || continue
+        projects+=("$project")
+    done
+fi
+if (( ${#projects[@]} == 0 )); then
+    echo "No se encontraron proyectos Laravel en $ROOT ni en sus subdirectorios inmediatos." >&2
+    echo 'Cada proyecto debe contener los archivos artisan y .env (no .ebv).' >&2
+fi
+for project in "${projects[@]}"; do
     [[ -d "$project" && -f "$project/artisan" && -f "$project/.env" ]] || continue
     count=$((count + 1))
     set +e
